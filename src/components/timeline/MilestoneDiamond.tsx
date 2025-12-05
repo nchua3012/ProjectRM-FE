@@ -13,6 +13,7 @@ export const MilestoneDiamond = React.memo(function MilestoneDiamond({
   scale,
   onClick,
   theme = THEMES.light,
+  currentWeekIndex = -1,
 }: MilestoneDiamondProps) {
   const cellWidth = getScaledCellWidth(scale);
   const milestoneType =
@@ -26,6 +27,10 @@ export const MilestoneDiamond = React.memo(function MilestoneDiamond({
     ? milestone.week * cellWidth // End of week (straddles boundary)
     : (milestone.week - 1) * cellWidth + cellWidth / 2; // Middle of cell
 
+  // Determine if milestone is in the past (before current week)
+  // milestone.week is 1-indexed, currentWeekIndex is 0-indexed
+  const isPast = currentWeekIndex >= 0 && milestone.week <= currentWeekIndex;
+
   // Avoid unused variable warning
   void theme;
 
@@ -38,6 +43,8 @@ export const MilestoneDiamond = React.memo(function MilestoneDiamond({
         transform: 'translateY(-50%)',
         zIndex: 20,
         pointerEvents: 'auto',
+        opacity: isPast ? 0.6 : 1,
+        filter: isPast ? 'grayscale(100%)' : 'none',
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -49,7 +56,7 @@ export const MilestoneDiamond = React.memo(function MilestoneDiamond({
         size={16}
         fill={milestoneType.color}
         color={milestoneType.color}
-        style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))' }}
+        style={{ filter: isPast ? 'none' : 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))' }}
       />
     </div>
   );

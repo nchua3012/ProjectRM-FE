@@ -21,6 +21,7 @@ export const TaskBar = React.memo(function TaskBar({
   onDragResize,
   totalWeeks,
   theme = THEMES.light,
+  currentWeekIndex = -1,
 }: TaskBarProps) {
   const cellWidth = getScaledCellWidth(scale);
   const barRef = useRef<HTMLDivElement>(null);
@@ -30,6 +31,10 @@ export const TaskBar = React.memo(function TaskBar({
 
   const left = bar.startWeek * cellWidth + CONFIG.BAR_MARGIN;
   const width = bar.duration * cellWidth - CONFIG.BAR_MARGIN * 2;
+
+  // Determine if bar is in the past (ends before current week)
+  const barEndWeek = bar.startWeek + bar.duration;
+  const isPast = currentWeekIndex >= 0 && barEndWeek <= currentWeekIndex;
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent, type: 'move' | 'resize') => {
@@ -116,7 +121,8 @@ export const TaskBar = React.memo(function TaskBar({
             ? '0 4px 12px rgba(0,0,0,0.25)'
             : '0 1px 3px rgba(0,0,0,0.15)',
         zIndex: isDragging || isResizing ? 30 : 10,
-        opacity: isDragging || isResizing ? 0.9 : 1,
+        opacity: isDragging || isResizing ? 0.9 : isPast ? 0.7 : 1,
+        filter: isPast ? 'grayscale(100%)' : 'none',
         pointerEvents: 'auto',
       }}
       onMouseDown={(e) => handleMouseDown(e, 'move')}

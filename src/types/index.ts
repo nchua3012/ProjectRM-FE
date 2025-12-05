@@ -215,6 +215,7 @@ export interface MilestoneDiamondProps {
   scale: number;
   onClick?: () => void;
   theme?: Theme;
+  currentWeekIndex?: number; // For greyscale past milestones
 }
 
 export interface TaskBarProps {
@@ -225,6 +226,7 @@ export interface TaskBarProps {
   onDragResize?: (barId: number, newDuration: number) => void;
   totalWeeks: number;
   theme?: Theme;
+  currentWeekIndex?: number; // For greyscale past tasks
 }
 
 export interface SwimlaneRowProps {

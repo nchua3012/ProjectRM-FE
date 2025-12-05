@@ -59,3 +59,21 @@ export function getStartOfCurrentWeek(): Date {
   d.setDate(d.getDate() - d.getDay() + 1);
   return d;
 }
+
+/**
+ * Get the current week index relative to the timeline start date
+ * @param startDate - Timeline start date
+ * @param totalWeeks - Total weeks in timeline
+ * @returns Zero-based week index, or -1 if today is outside the timeline
+ */
+export function getCurrentWeekIndex(startDate: Date, totalWeeks: number): number {
+  if (!startDate || !(startDate instanceof Date) || isNaN(startDate.getTime())) {
+    return -1;
+  }
+  for (let i = 0; i < totalWeeks; i++) {
+    if (isCurrentWeek(startDate, i)) {
+      return i;
+    }
+  }
+  return -1;
+}

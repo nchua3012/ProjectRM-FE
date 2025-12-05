@@ -122,6 +122,7 @@ export interface Swimlane {
   order: number;
   bars: TaskBar[];
   milestones: Milestone[];
+  heightMultiplier?: number; // 1 (default), 2, 4, or 6
 }
 
 // ==================== COLOR PRESET TYPES ====================
@@ -235,6 +236,7 @@ export interface SwimlaneRowProps {
   onMilestoneClick?: (milestoneId: number) => void;
   onBarDragMove?: (barId: number, newStart: number) => void;
   onBarDragResize?: (barId: number, newDuration: number) => void;
+  onHeightChange?: (newMultiplier: number) => void;
   scale: number;
   isEven?: boolean;
   theme?: Theme;

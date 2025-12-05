@@ -29,7 +29,7 @@ import type {
   EditingMilestoneState,
   MilestoneTypeId,
 } from '@/types';
-import { CONFIG, THEMES } from '@/config';
+import { CONFIG, THEMES, HEADER_HEIGHTS, SIDEBAR_CONFIG } from '@/config';
 import { DataFactory } from '@/factories';
 import { getScaledCellWidth, generateId, getStartOfCurrentWeek } from '@/utils';
 import {
@@ -65,10 +65,14 @@ export function GanttChart() {
   const [draggedSwimlane, setDraggedSwimlane] = useState<number | null>(null);
   const [themeMode, setThemeMode] = useState<ThemeMode>('light');
   const [showHolidays, setShowHolidays] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(SIDEBAR_CONFIG.DEFAULT_WIDTH);
+  const [isResizingSidebar, setIsResizingSidebar] = useState(false);
 
   // ==================== REFS ====================
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const sidebarResizeStartX = useRef<number>(0);
+  const sidebarStartWidth = useRef<number>(SIDEBAR_CONFIG.DEFAULT_WIDTH);
 
   // ==================== DERIVED STATE ====================
   const theme = THEMES[themeMode];
@@ -115,6 +119,12 @@ export function GanttChart() {
 
         return updated.map((s, i) => ({ ...s, order: i }));
       });
+    }, []),
+
+    updateHeight: useCallback((id: number, heightMultiplier: number) => {
+      setSwimlanes((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, heightMultiplier } : s))
+      );
     }, []),
   };
 
@@ -321,6 +331,52 @@ export function GanttChart() {
     ),
   };
 
+  // ==================== SIDEBAR RESIZE HANDLERS ====================
+  const handleSidebarResizeStart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      setIsResizingSidebar(true);
+      sidebarResizeStartX.current = e.clientX;
+      sidebarStartWidth.current = sidebarWidth;
+    },
+    [sidebarWidth]
+  );
+
+  const handleSidebarResizeMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isResizingSidebar) return;
+
+      const deltaX = e.clientX - sidebarResizeStartX.current;
+      const newWidth = Math.max(
+        SIDEBAR_CONFIG.MIN_WIDTH,
+        Math.min(SIDEBAR_CONFIG.MAX_WIDTH, sidebarStartWidth.current + deltaX)
+      );
+      setSidebarWidth(newWidth);
+    },
+    [isResizingSidebar]
+  );
+
+  const handleSidebarResizeEnd = useCallback(() => {
+    setIsResizingSidebar(false);
+  }, []);
+
+  // Add/remove global mouse event listeners for sidebar resize
+  useEffect(() => {
+    if (isResizingSidebar) {
+      window.addEventListener('mousemove', handleSidebarResizeMove);
+      window.addEventListener('mouseup', handleSidebarResizeEnd);
+      // Add cursor style to body during resize
+      document.body.style.cursor = 'ew-resize';
+      document.body.style.userSelect = 'none';
+      return () => {
+        window.removeEventListener('mousemove', handleSidebarResizeMove);
+        window.removeEventListener('mouseup', handleSidebarResizeEnd);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      };
+    }
+  }, [isResizingSidebar, handleSidebarResizeMove, handleSidebarResizeEnd]);
+
   // Focus name input when editing
   useEffect(() => {
     if (isEditingName && nameInputRef.current) {
@@ -450,58 +506,94 @@ export function GanttChart() {
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
-        <div
-          className="flex-shrink-0 flex flex-col border-r"
-          style={{
-            width: CONFIG.SIDEBAR_WIDTH,
-            backgroundColor: theme.sidebarBg,
-            borderColor: theme.sidebarBorder,
-          }}
-        >
-          {/* Sidebar Header */}
+        {/* Sidebar with Resize Handle */}
+        <div className="flex-shrink-0 flex relative">
+          {/* Sidebar Content */}
           <div
-            className="px-3 py-2 border-b font-semibold text-sm"
+            className="flex flex-col border-r"
             style={{
-              height: CONFIG.HEADER_HEIGHT + 24,
+              width: sidebarWidth,
+              backgroundColor: theme.sidebarBg,
               borderColor: theme.sidebarBorder,
-              color: theme.sidebarText,
             }}
           >
-            <div className="flex items-center justify-between h-full">
-              <span>WORKSTREAMS</span>
-              <span
-                className="text-xs px-2 py-0.5 rounded"
-                style={{ backgroundColor: theme.subHeaderBg }}
-              >
-                {swimlanes.length}
-              </span>
+            {/* Sidebar Header */}
+            <div
+              className="px-3 border-b font-semibold text-sm"
+              style={{
+                height: HEADER_HEIGHTS.TOTAL,
+                borderColor: theme.sidebarBorder,
+                color: theme.sidebarText,
+              }}
+            >
+              <div className="flex items-center justify-between h-full">
+                <span
+                  className="truncate"
+                  style={{ opacity: sidebarWidth < 120 ? 0 : 1 }}
+                >
+                  WORKSTREAMS
+                </span>
+                <span
+                  className="text-xs px-2 py-0.5 rounded flex-shrink-0"
+                  style={{ backgroundColor: theme.subHeaderBg }}
+                >
+                  {swimlanes.length}
+                </span>
+              </div>
+            </div>
+
+            {/* Swimlane List */}
+            <div className="flex-1 overflow-y-auto">
+              {sortedSwimlanes.map((swim, index) => (
+                <SidebarRow
+                  key={swim.id}
+                  swimlane={swim}
+                  isEven={index % 2 === 0}
+                  onEdit={(name) => swimlaneOps.rename(swim.id, name)}
+                  onDelete={() => swimlaneOps.delete(swim.id)}
+                  onDragStart={(e) => {
+                    setDraggedSwimlane(swim.id);
+                    e.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => {
+                    if (draggedSwimlane && draggedSwimlane !== swim.id) {
+                      swimlaneOps.reorder(draggedSwimlane, swim.id);
+                    }
+                    setDraggedSwimlane(null);
+                  }}
+                  theme={theme}
+                />
+              ))}
             </div>
           </div>
 
-          {/* Swimlane List */}
-          <div className="flex-1 overflow-y-auto">
-            {sortedSwimlanes.map((swim, index) => (
-              <SidebarRow
-                key={swim.id}
-                swimlane={swim}
-                isEven={index % 2 === 0}
-                onEdit={(name) => swimlaneOps.rename(swim.id, name)}
-                onDelete={() => swimlaneOps.delete(swim.id)}
-                onDragStart={(e) => {
-                  setDraggedSwimlane(swim.id);
-                  e.dataTransfer.effectAllowed = 'move';
-                }}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={() => {
-                  if (draggedSwimlane && draggedSwimlane !== swim.id) {
-                    swimlaneOps.reorder(draggedSwimlane, swim.id);
-                  }
-                  setDraggedSwimlane(null);
-                }}
-                theme={theme}
-              />
-            ))}
+          {/* Sidebar Resize Handle */}
+          <div
+            className="absolute top-0 bottom-0 cursor-ew-resize z-20 flex items-center justify-center group"
+            style={{
+              right: -SIDEBAR_CONFIG.RESIZE_HANDLE_WIDTH / 2,
+              width: SIDEBAR_CONFIG.RESIZE_HANDLE_WIDTH,
+            }}
+            onMouseDown={handleSidebarResizeStart}
+            title="Drag to resize sidebar"
+          >
+            {/* Visual indicator line */}
+            <div
+              className="h-full w-0.5 transition-colors"
+              style={{
+                backgroundColor: isResizingSidebar
+                  ? theme.accent
+                  : 'transparent',
+              }}
+            />
+            {/* Hover indicator */}
+            <div
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{
+                backgroundColor: `${theme.accent}40`,
+              }}
+            />
           </div>
         </div>
 
@@ -517,7 +609,10 @@ export function GanttChart() {
             />
 
             {/* Week Headers */}
-            <div className="flex" style={{ backgroundColor: theme.subHeaderBg }}>
+            <div
+              className="flex"
+              style={{ backgroundColor: theme.subHeaderBg, height: HEADER_HEIGHTS.WEEK_HEADER }}
+            >
               {Array.from({ length: totalWeeks }).map((_, weekIndex) => (
                 <WeekHeader
                   key={weekIndex}
@@ -557,6 +652,9 @@ export function GanttChart() {
                   }
                   onBarDragResize={(barId, newDuration) =>
                     barOps.updateDirect(swim.id, barId, 'duration', newDuration)
+                  }
+                  onHeightChange={(newMultiplier) =>
+                    swimlaneOps.updateHeight(swim.id, newMultiplier)
                   }
                   scale={scale}
                   theme={theme}

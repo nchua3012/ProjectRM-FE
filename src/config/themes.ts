@@ -63,20 +63,20 @@ export const THEMES: Readonly<Themes> = Object.freeze({
     name: 'dark' as const,
 
     // Header & Structure
-    headerBg: '#111827', // Very dark
+    headerBg: '#000000', // Pure black
     headerText: '#f9fafb',
-    subHeaderBg: '#1f2937', // Dark grey
+    subHeaderBg: '#141414', // Very dark grey
 
     // Sidebar
-    sidebarBg: '#0f172a', // Near black
+    sidebarBg: '#000000', // Pure black
     sidebarText: '#e5e7eb',
-    sidebarBorder: '#1f2937',
+    sidebarBorder: '#262626',
 
     // Grid & Background
-    gridBg: '#111827', // Dark background
-    gridAltBg: '#1f2937', // Slightly lighter rows
-    gridLine: '#374151',
-    cellHover: '#374151',
+    gridBg: '#0a0a0a', // Near black
+    gridAltBg: '#141414', // Very dark grey rows
+    gridLine: '#262626',
+    cellHover: '#1a1a1a',
 
     // Today Marker
     todayBg: '#10b981', // Green (same)
@@ -101,16 +101,16 @@ export const THEMES: Readonly<Themes> = Object.freeze({
     // Text
     textPrimary: '#f9fafb',
     textSecondary: '#d1d5db',
-    textMuted: '#9ca3af',
+    textMuted: '#737373',
 
     // Modal
-    modalBg: '#1f2937',
-    inputBg: '#111827',
-    inputBorder: '#374151',
+    modalBg: '#141414',
+    inputBg: '#0a0a0a',
+    inputBorder: '#262626',
 
     // Holidays
-    holidayBg: 'rgba(156, 163, 175, 0.2)',
-    holidayBorder: '#9ca3af',
+    holidayBg: 'rgba(115, 115, 115, 0.15)',
+    holidayBorder: '#737373',
     holidayText: '#d1d5db',
   }),
 });

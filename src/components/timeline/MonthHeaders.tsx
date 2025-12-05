@@ -1,6 +1,6 @@
 import React from 'react';
 import type { MonthHeadersProps } from '@/types';
-import { THEMES } from '@/config';
+import { THEMES, HEADER_HEIGHTS } from '@/config';
 import { getScaledCellWidth, getMonthLabel } from '@/utils';
 
 interface MonthData {
@@ -43,11 +43,14 @@ export const MonthHeaders = React.memo(function MonthHeaders({
   }
 
   return (
-    <div className="flex" style={{ backgroundColor: theme.headerBg }}>
+    <div
+      className="flex"
+      style={{ backgroundColor: theme.headerBg, height: HEADER_HEIGHTS.MONTH_HEADER }}
+    >
       {months.map((m, i) => (
         <div
           key={i}
-          className="text-center py-2 border-r font-semibold text-sm uppercase tracking-wide"
+          className="flex items-center justify-center border-r font-semibold text-sm uppercase tracking-wide"
           style={{
             width: m.width,
             borderColor: theme.subHeaderBg,

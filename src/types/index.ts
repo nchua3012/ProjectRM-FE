@@ -103,6 +103,15 @@ export interface TaskBar {
   name: string;
   notes: string;
   color: string;
+  completed: boolean;       // Track if task is finished
+  ignoreGrayscale: boolean; // Override for incomplete past tasks
+}
+
+// Today position in the timeline
+export interface TodayPosition {
+  weekIndex: number;        // Zero-indexed week containing today
+  fractionalOffset: number; // 0-1, position within the week (0.5 = middle)
+  totalWeeks: number;       // Decimal weeks from start
 }
 
 export interface Milestone {
@@ -194,6 +203,7 @@ export interface WeekHeaderProps {
   monthLabel?: string;
   theme?: Theme;
   showHolidays?: boolean;
+  todayPosition?: TodayPosition | null; // For greyscale past weeks
 }
 
 export interface MonthHeadersProps {
@@ -216,6 +226,7 @@ export interface MilestoneDiamondProps {
   onClick?: () => void;
   theme?: Theme;
   currentWeekIndex?: number; // For greyscale past milestones
+  todayPosition?: TodayPosition | null; // For greyscale past milestones (fractional)
 }
 
 export interface TaskBarProps {
@@ -227,6 +238,7 @@ export interface TaskBarProps {
   totalWeeks: number;
   theme?: Theme;
   currentWeekIndex?: number; // For greyscale past tasks
+  todayPosition?: TodayPosition | null; // For split bar rendering
 }
 
 export interface SwimlaneRowProps {
@@ -273,9 +285,10 @@ export interface EditBarModalProps {
   bar: TaskBar | null;
   totalWeeks: number;
   onClose?: () => void;
-  onUpdate?: (field: keyof TaskBar, value: string | number) => void;
+  onUpdate?: (field: keyof TaskBar, value: string | number | boolean) => void;
   onDelete?: () => void;
   theme?: Theme;
+  todayPosition?: TodayPosition | null;
 }
 
 export interface EditMilestoneModalProps {

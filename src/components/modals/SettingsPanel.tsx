@@ -1,7 +1,7 @@
 import { Moon, Sun, Calendar } from 'lucide-react';
 import type { SettingsPanelProps } from '@/types';
 import { CONFIG } from '@/config';
-import { clamp } from '@/utils';
+import { clamp, parseDateString, getMondayOfWeek } from '@/utils';
 import { Modal } from './Modal';
 
 /**
@@ -132,19 +132,22 @@ export function SettingsPanel({
 
         <div>
           <label className="block text-sm font-medium mb-1" style={{ color: theme.textSecondary }}>
-            Start Date
+            Start Date (Week Commencing Monday)
           </label>
           <input
             type="date"
             value={
               startDate instanceof Date && !isNaN(startDate.getTime())
-                ? startDate.toISOString().split('T')[0]
+                ? `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`
                 : ''
             }
             onChange={(e) => {
-              const newDate = new Date(e.target.value);
-              if (!isNaN(newDate.getTime()) && typeof onUpdateStartDate === 'function') {
-                onUpdateStartDate(newDate);
+              // Use parseDateString to avoid timezone issues
+              const newDate = parseDateString(e.target.value);
+              if (newDate && typeof onUpdateStartDate === 'function') {
+                // Automatically adjust to Monday of the selected week
+                const monday = getMondayOfWeek(newDate);
+                onUpdateStartDate(monday);
               }
             }}
             className="w-full px-3 py-2 border rounded focus:ring-2 focus:outline-none"
@@ -154,6 +157,9 @@ export function SettingsPanel({
               backgroundColor: theme.inputBg,
             }}
           />
+          <p className="text-xs mt-1" style={{ color: theme.textMuted }}>
+            Date will be adjusted to the Monday of the selected week
+          </p>
         </div>
 
         <button

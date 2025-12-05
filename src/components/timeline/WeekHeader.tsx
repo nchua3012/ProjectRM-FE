@@ -2,11 +2,12 @@ import React from 'react';
 import { Calendar } from 'lucide-react';
 import type { WeekHeaderProps } from '@/types';
 import { THEMES, getHolidaysInWeek } from '@/config';
-import { getScaledCellWidth, getWeekLabel, isCurrentWeek } from '@/utils';
+import { getScaledCellWidth, getWeekLabel, isCurrentWeek, isWeekBeforeToday } from '@/utils';
 
 /**
  * Week Header Component
  * Individual week column header with date and week number
+ * Applies grayscale filter to past weeks
  */
 export const WeekHeader = React.memo(function WeekHeader({
   weekIndex,
@@ -14,15 +15,19 @@ export const WeekHeader = React.memo(function WeekHeader({
   scale,
   theme = THEMES.light,
   showHolidays = false,
+  todayPosition,
 }: WeekHeaderProps) {
   const cellWidth = getScaledCellWidth(scale);
   const isToday = isCurrentWeek(startDate, weekIndex);
   const holidays = showHolidays ? getHolidaysInWeek(startDate, weekIndex) : [];
   const hasHoliday = holidays.length > 0;
 
+  // Check if this week is in the past
+  const isPast = isWeekBeforeToday(weekIndex, todayPosition ?? null);
+
   return (
     <div
-      className="flex-shrink-0 text-center border-r relative"
+      className="flex-shrink-0 text-center border-r relative transition-all"
       style={{
         width: cellWidth,
         borderColor: theme.gridLine,
@@ -31,6 +36,8 @@ export const WeekHeader = React.memo(function WeekHeader({
           : hasHoliday
             ? theme.holidayBg
             : theme.subHeaderBg,
+        filter: isPast ? 'grayscale(100%)' : 'none',
+        opacity: isPast ? 0.5 : 1,
       }}
     >
       {isToday && (

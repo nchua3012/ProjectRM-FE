@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
 import type { SwimlaneRowProps } from '@/types';
 import { THEMES, getHolidaysInWeek, CONFIG, HEIGHT_CONFIG } from '@/config';
-import { getScaledCellWidth, getCurrentWeekIndex } from '@/utils';
+import { getScaledCellWidth, getCurrentWeekIndex, calculateTodayPosition } from '@/utils';
 import { TaskBar } from './TaskBar';
 import { MilestoneDiamond } from './MilestoneDiamond';
 import { GripHorizontal } from 'lucide-react';
@@ -41,6 +41,12 @@ export const SwimlaneRow = React.memo(function SwimlaneRow({
   const currentWeekIndex = useMemo(
     () => getCurrentWeekIndex(startDate, totalWeeks),
     [startDate, totalWeeks]
+  );
+
+  // Calculate today position for precise grayscale and split bar logic
+  const todayPosition = useMemo(
+    () => calculateTodayPosition(startDate),
+    [startDate]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -189,6 +195,7 @@ export const SwimlaneRow = React.memo(function SwimlaneRow({
             onDragResize={onBarDragResize}
             theme={theme}
             currentWeekIndex={currentWeekIndex}
+            todayPosition={todayPosition}
           />
         ))}
 
@@ -204,6 +211,7 @@ export const SwimlaneRow = React.memo(function SwimlaneRow({
             }}
             theme={theme}
             currentWeekIndex={currentWeekIndex}
+            todayPosition={todayPosition}
           />
         ))}
 

@@ -1,3 +1,4 @@
+import { Check } from 'lucide-react';
 import type { EditBarModalProps } from '@/types';
 import { CONFIG, THEMES, TASK_COLOR_PRESETS } from '@/config';
 import { clamp } from '@/utils';
@@ -5,7 +6,7 @@ import { Modal } from './Modal';
 
 /**
  * Edit Bar Modal Component
- * Modal for editing task bar properties
+ * Modal for editing task bar properties including completion status
  */
 export function EditBarModal({
   bar,
@@ -14,8 +15,13 @@ export function EditBarModal({
   onUpdate,
   onDelete,
   theme = THEMES.light,
+  todayPosition,
 }: EditBarModalProps) {
   if (!bar) return null;
+
+  // Check if bar is in the past
+  const barEndWeek = (bar.startWeek ?? 0) + (bar.duration ?? 1);
+  const isInPast = todayPosition && barEndWeek <= todayPosition.totalWeeks;
 
   return (
     <Modal title="Edit Task" onClose={onClose} theme={theme}>
@@ -38,6 +44,76 @@ export function EditBarModal({
             }}
           />
         </div>
+
+        {/* Task Status Section */}
+        <div>
+          <label className="block text-sm font-medium mb-2" style={{ color: theme.textSecondary }}>
+            Task Status
+          </label>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                if (typeof onUpdate === 'function') onUpdate('completed', true);
+              }}
+              className="flex-1 px-4 py-2 rounded border transition-all flex items-center justify-center gap-2"
+              style={{
+                backgroundColor: bar.completed ? theme.success : theme.inputBg,
+                color: bar.completed ? '#fff' : theme.textPrimary,
+                borderColor: bar.completed ? theme.success : theme.inputBorder,
+              }}
+            >
+              <Check size={16} />
+              Completed
+            </button>
+            <button
+              onClick={() => {
+                if (typeof onUpdate === 'function') onUpdate('completed', false);
+              }}
+              className="flex-1 px-4 py-2 rounded border transition-all"
+              style={{
+                backgroundColor: !bar.completed ? theme.accent : theme.inputBg,
+                color: !bar.completed ? '#fff' : theme.textPrimary,
+                borderColor: !bar.completed ? theme.accent : theme.inputBorder,
+              }}
+            >
+              In Progress
+            </button>
+          </div>
+        </div>
+
+        {/* Override Grayscale Option (only for incomplete past tasks) */}
+        {!bar.completed && isInPast && (
+          <div
+            className="rounded-lg p-3"
+            style={{
+              backgroundColor: '#fef3c7',
+              border: '1px solid #f59e0b',
+            }}
+          >
+            <div className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                id="ignoreGrayscale"
+                checked={bar.ignoreGrayscale || false}
+                onChange={(e) => {
+                  if (typeof onUpdate === 'function') onUpdate('ignoreGrayscale', e.target.checked);
+                }}
+                className="mt-1"
+              />
+              <label
+                htmlFor="ignoreGrayscale"
+                className="text-sm cursor-pointer flex-1"
+                style={{ color: '#92400e' }}
+              >
+                <div className="font-semibold">Keep Highlighted (Overdue Task)</div>
+                <div className="text-xs" style={{ color: '#b45309' }}>
+                  This task is past its deadline. Check to keep it visible in color instead of
+                  greyed out.
+                </div>
+              </label>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           <div>

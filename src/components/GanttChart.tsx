@@ -31,7 +31,7 @@ import type {
 } from '@/types';
 import { CONFIG, THEMES, HEADER_HEIGHTS, SIDEBAR_CONFIG } from '@/config';
 import { DataFactory } from '@/factories';
-import { getScaledCellWidth, generateId, getStartOfCurrentWeek } from '@/utils';
+import { getScaledCellWidth, generateId, getStartOfCurrentWeek, calculateTodayPosition } from '@/utils';
 import {
   WeekHeader,
   MonthHeaders,
@@ -84,6 +84,12 @@ export function GanttChart() {
   );
 
   const cellWidth = getScaledCellWidth(scale);
+
+  // Calculate today's position for grayscale and split bar logic
+  const todayPosition = useMemo(
+    () => calculateTodayPosition(startDate),
+    [startDate]
+  );
 
   // ==================== SWIMLANE OPERATIONS ====================
   const swimlaneOps = {
@@ -144,7 +150,7 @@ export function GanttChart() {
     }, []),
 
     update: useCallback(
-      (swimlaneId: number, barId: number, field: keyof TaskBar, value: string | number) => {
+      (swimlaneId: number, barId: number, field: keyof TaskBar, value: string | number | boolean) => {
         setSwimlanes((prev) =>
           prev.map((s) => {
             if (s.id !== swimlaneId) return s;
@@ -621,6 +627,7 @@ export function GanttChart() {
                   scale={scale}
                   theme={theme}
                   showHolidays={showHolidays}
+                  todayPosition={todayPosition}
                 />
               ))}
             </div>
@@ -678,6 +685,7 @@ export function GanttChart() {
           }
           onDelete={() => barOps.delete(editingBar.swimlaneId, editingBar.barId)}
           theme={theme}
+          todayPosition={todayPosition}
         />
       )}
 

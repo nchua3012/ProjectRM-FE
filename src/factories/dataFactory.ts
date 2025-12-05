@@ -30,6 +30,8 @@ export const DataFactory = {
       name: 'New Task',
       notes: '',
       color: color || TASK_COLOR_PRESETS[0].color,
+      completed: false,           // Track if task is finished
+      ignoreGrayscale: false,     // Override for incomplete past tasks
     };
   },
 

@@ -7,12 +7,15 @@ import { getScaledCellWidth } from '@/utils';
 /**
  * Milestone Diamond Component
  * Displays a milestone marker on the timeline
+ * Applies grayscale filter to past milestones
  */
 export const MilestoneDiamond = React.memo(function MilestoneDiamond({
   milestone,
   scale,
   onClick,
   theme = THEMES.light,
+  currentWeekIndex = -1,
+  todayPosition,
 }: MilestoneDiamondProps) {
   const cellWidth = getScaledCellWidth(scale);
   const milestoneType =
@@ -26,18 +29,27 @@ export const MilestoneDiamond = React.memo(function MilestoneDiamond({
     ? milestone.week * cellWidth // End of week (straddles boundary)
     : (milestone.week - 1) * cellWidth + cellWidth / 2; // Middle of cell
 
+  // Determine if milestone is in the past
+  // milestone.week is 1-indexed
+  // Use todayPosition if available, otherwise fall back to currentWeekIndex
+  const isPast = todayPosition
+    ? milestone.week <= todayPosition.weekIndex
+    : currentWeekIndex >= 0 && milestone.week <= currentWeekIndex;
+
   // Avoid unused variable warning
   void theme;
 
   return (
     <div
-      className="absolute cursor-pointer transition-transform hover:scale-110"
+      className="absolute cursor-pointer transition-all hover:scale-110"
       style={{
         left: left - 8, // Center the 16px diamond on the position
         top: '50%',
         transform: 'translateY(-50%)',
         zIndex: 20,
         pointerEvents: 'auto',
+        opacity: isPast ? 0.5 : 1,
+        filter: isPast ? 'grayscale(100%)' : 'none',
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -49,7 +61,7 @@ export const MilestoneDiamond = React.memo(function MilestoneDiamond({
         size={16}
         fill={milestoneType.color}
         color={milestoneType.color}
-        style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))' }}
+        style={{ filter: isPast ? 'none' : 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))' }}
       />
     </div>
   );

@@ -1,2 +1,15 @@
-export { getWeekLabel, getMonthLabel, isCurrentWeek, getStartOfCurrentWeek } from './dateUtils';
+export {
+  getWeekLabel,
+  getMonthLabel,
+  isCurrentWeek,
+  getStartOfCurrentWeek,
+  getMondayOfWeek,
+  getCurrentWeekIndex,
+  calculateTodayPosition,
+  isWeekBeforeToday,
+  shouldApplyGrayscale,
+  doesBarSpanToday,
+  normalizeToLocalMidnight,
+  parseDateString,
+} from './dateUtils';
 export { getScaledCellWidth, clamp, generateId } from './helpers';

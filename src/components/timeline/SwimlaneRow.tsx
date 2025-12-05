@@ -1,7 +1,7 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import type { SwimlaneRowProps } from '@/types';
 import { THEMES, getHolidaysInWeek, CONFIG, HEIGHT_CONFIG } from '@/config';
-import { getScaledCellWidth } from '@/utils';
+import { getScaledCellWidth, getCurrentWeekIndex, calculateTodayPosition } from '@/utils';
 import { TaskBar } from './TaskBar';
 import { MilestoneDiamond } from './MilestoneDiamond';
 import { GripHorizontal } from 'lucide-react';
@@ -36,6 +36,18 @@ export const SwimlaneRow = React.memo(function SwimlaneRow({
   // Calculate actual row height based on multiplier
   const heightMultiplier = swimlane.heightMultiplier || HEIGHT_CONFIG.DEFAULT_MULTIPLIER;
   const rowHeight = CONFIG.ROW_HEIGHT * heightMultiplier;
+
+  // Calculate current week index for greyscale past items
+  const currentWeekIndex = useMemo(
+    () => getCurrentWeekIndex(startDate, totalWeeks),
+    [startDate, totalWeeks]
+  );
+
+  // Calculate today position for precise grayscale and split bar logic
+  const todayPosition = useMemo(
+    () => calculateTodayPosition(startDate),
+    [startDate]
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -182,6 +194,8 @@ export const SwimlaneRow = React.memo(function SwimlaneRow({
             onDragMove={onBarDragMove}
             onDragResize={onBarDragResize}
             theme={theme}
+            currentWeekIndex={currentWeekIndex}
+            todayPosition={todayPosition}
           />
         ))}
 
@@ -196,6 +210,8 @@ export const SwimlaneRow = React.memo(function SwimlaneRow({
               if (typeof onMilestoneClick === 'function') onMilestoneClick(milestone.id);
             }}
             theme={theme}
+            currentWeekIndex={currentWeekIndex}
+            todayPosition={todayPosition}
           />
         ))}
 

@@ -96,6 +96,8 @@ export type MilestoneTypes = Record<Uppercase<MilestoneTypeId>, MilestoneType>;
 
 // ==================== TASK/BAR TYPES ====================
 
+export type VerticalAlign = 'top' | 'middle' | 'bottom';
+
 export interface TaskBar {
   id: number;
   startWeek: number;
@@ -105,6 +107,7 @@ export interface TaskBar {
   color: string;
   completed: boolean;       // Track if task is finished
   ignoreGrayscale: boolean; // Override for incomplete past tasks
+  verticalAlign: VerticalAlign; // Vertical position within swimlane
 }
 
 // Today position in the timeline

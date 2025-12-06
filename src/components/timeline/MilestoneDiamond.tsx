@@ -1,7 +1,7 @@
 import React from 'react';
 import { Diamond } from 'lucide-react';
 import type { MilestoneDiamondProps } from '@/types';
-import { THEMES, MILESTONE_TYPES } from '@/config';
+import { MILESTONE_TYPES } from '@/config';
 import { getScaledCellWidth } from '@/utils';
 
 /**
@@ -13,10 +13,9 @@ export const MilestoneDiamond = React.memo(function MilestoneDiamond({
   milestone,
   scale,
   onClick,
-  theme = THEMES.light,
   currentWeekIndex = -1,
   todayPosition,
-}: MilestoneDiamondProps) {
+}: Omit<MilestoneDiamondProps, 'theme'>) {
   const cellWidth = getScaledCellWidth(scale);
   const milestoneType =
     MILESTONE_TYPES[milestone.type?.toUpperCase() as keyof typeof MILESTONE_TYPES] ||
@@ -30,14 +29,11 @@ export const MilestoneDiamond = React.memo(function MilestoneDiamond({
     : (milestone.week - 1) * cellWidth + cellWidth / 2; // Middle of cell
 
   // Determine if milestone is in the past
-  // milestone.week is 1-indexed
-  // Use todayPosition if available, otherwise fall back to currentWeekIndex
+  // milestone.week is 1-indexed, todayPosition.weekIndex is 0-indexed
+  // Convert milestone.week to 0-indexed for comparison: (milestone.week - 1)
   const isPast = todayPosition
-    ? milestone.week <= todayPosition.weekIndex
-    : currentWeekIndex >= 0 && milestone.week <= currentWeekIndex;
-
-  // Avoid unused variable warning
-  void theme;
+    ? milestone.week - 1 < todayPosition.weekIndex
+    : currentWeekIndex >= 0 && milestone.week - 1 < currentWeekIndex;
 
   return (
     <div

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import type { TaskBarProps } from '@/types';
+import type { TaskBarProps, VerticalAlign } from '@/types';
 import { CONFIG, THEMES } from '@/config';
 import { getScaledCellWidth, clamp, shouldApplyGrayscale, doesBarSpanToday } from '@/utils';
 
@@ -10,9 +10,25 @@ interface DragState {
 }
 
 /**
+ * Get vertical position styles based on alignment
+ */
+function getVerticalPosition(align: VerticalAlign): { top: string; transform: string } {
+  switch (align) {
+    case 'top':
+      return { top: '8px', transform: 'none' };
+    case 'bottom':
+      return { top: 'calc(100% - 8px)', transform: 'translateY(-100%)' };
+    case 'middle':
+    default:
+      return { top: '50%', transform: 'translateY(-50%)' };
+  }
+}
+
+/**
  * Task Bar Component with Drag Support
  * Displays a task bar that can be moved and resized
  * Supports visual split for bars spanning today with grayscale past portion
+ * Supports vertical alignment (top, middle, bottom) within swimlane
  */
 export const TaskBar = React.memo(function TaskBar({
   bar,
@@ -26,13 +42,17 @@ export const TaskBar = React.memo(function TaskBar({
   todayPosition,
 }: TaskBarProps) {
   const cellWidth = getScaledCellWidth(scale);
-  const barRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const dragStartRef = useRef<DragState>({ x: 0, startWeek: 0, duration: 0 });
+  const hasDraggedRef = useRef(false); // Track if actual movement occurred
 
   const left = bar.startWeek * cellWidth + CONFIG.BAR_MARGIN;
   const width = bar.duration * cellWidth - CONFIG.BAR_MARGIN * 2;
+
+  // Get vertical position based on alignment (default to middle)
+  const verticalAlign = bar.verticalAlign || 'middle';
+  const { top: verticalTop, transform: verticalTransform } = getVerticalPosition(verticalAlign);
 
   // Determine if bar is in the past (ends before current week) - using old logic as fallback
   const barEndWeek = bar.startWeek + bar.duration;
@@ -57,6 +77,7 @@ export const TaskBar = React.memo(function TaskBar({
         startWeek: bar.startWeek,
         duration: bar.duration,
       };
+      hasDraggedRef.current = false; // Reset drag tracking
 
       if (type === 'move') {
         setIsDragging(true);
@@ -73,6 +94,11 @@ export const TaskBar = React.memo(function TaskBar({
     const handleMouseMove = (e: MouseEvent) => {
       const deltaX = e.clientX - dragStartRef.current.x;
       const deltaWeeks = Math.round(deltaX / cellWidth);
+
+      // Mark as dragged if there's any significant movement
+      if (Math.abs(deltaX) > 3) {
+        hasDraggedRef.current = true;
+      }
 
       if (isDragging && typeof onDragMove === 'function') {
         const newStart = clamp(
@@ -114,9 +140,6 @@ export const TaskBar = React.memo(function TaskBar({
     onDragResize,
   ]);
 
-  // Avoid unused variable warning
-  void barRef;
-
   // Render split bar if it spans today and is not completed
   if (spansToday && todayPosition && !bar.completed) {
     const splitPoint = todayPosition.totalWeeks - bar.startWeek;
@@ -132,8 +155,8 @@ export const TaskBar = React.memo(function TaskBar({
           style={{
             left,
             width: Math.max(pastWidth, 10),
-            top: '50%',
-            transform: 'translateY(-50%)',
+            top: verticalTop,
+            transform: verticalTransform,
             height: 28,
             backgroundColor: bar.color || theme.taskDefault,
             boxShadow:
@@ -150,7 +173,7 @@ export const TaskBar = React.memo(function TaskBar({
           }}
           onMouseDown={(e) => handleMouseDown(e, 'move')}
           onClick={(e) => {
-            if (!isDragging && !isResizing && typeof onClick === 'function') {
+            if (!hasDraggedRef.current && typeof onClick === 'function') {
               e.stopPropagation();
               onClick();
             }
@@ -168,8 +191,8 @@ export const TaskBar = React.memo(function TaskBar({
           style={{
             left: futureLeft,
             width: Math.max(futureWidth, 10),
-            top: '50%',
-            transform: 'translateY(-50%)',
+            top: verticalTop,
+            transform: verticalTransform,
             height: 28,
             backgroundColor: bar.color || theme.taskDefault,
             boxShadow:
@@ -184,7 +207,7 @@ export const TaskBar = React.memo(function TaskBar({
           }}
           onMouseDown={(e) => handleMouseDown(e, 'move')}
           onClick={(e) => {
-            if (!isDragging && !isResizing && typeof onClick === 'function') {
+            if (!hasDraggedRef.current && typeof onClick === 'function') {
               e.stopPropagation();
               onClick();
             }
@@ -213,8 +236,8 @@ export const TaskBar = React.memo(function TaskBar({
       style={{
         left,
         width: Math.max(width, 20),
-        top: '50%',
-        transform: 'translateY(-50%)',
+        top: verticalTop,
+        transform: verticalTransform,
         height: 28,
         backgroundColor: bar.color || theme.taskDefault,
         boxShadow:
@@ -230,7 +253,7 @@ export const TaskBar = React.memo(function TaskBar({
       }}
       onMouseDown={(e) => handleMouseDown(e, 'move')}
       onClick={(e) => {
-        if (!isDragging && !isResizing && typeof onClick === 'function') {
+        if (!hasDraggedRef.current && typeof onClick === 'function') {
           e.stopPropagation();
           onClick();
         }

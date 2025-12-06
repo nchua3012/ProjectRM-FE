@@ -209,7 +209,6 @@ export const SwimlaneRow = React.memo(function SwimlaneRow({
             onClick={() => {
               if (typeof onMilestoneClick === 'function') onMilestoneClick(milestone.id);
             }}
-            theme={theme}
             currentWeekIndex={currentWeekIndex}
             todayPosition={todayPosition}
           />

@@ -1,8 +1,14 @@
-import { Check } from 'lucide-react';
-import type { EditBarModalProps } from '@/types';
+import { Check, AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd } from 'lucide-react';
+import type { EditBarModalProps, VerticalAlign } from '@/types';
 import { CONFIG, THEMES, TASK_COLOR_PRESETS } from '@/config';
 import { clamp } from '@/utils';
 import { Modal } from './Modal';
+
+const VERTICAL_ALIGN_OPTIONS: { value: VerticalAlign; label: string; icon: typeof AlignVerticalJustifyStart }[] = [
+  { value: 'top', label: 'Top', icon: AlignVerticalJustifyStart },
+  { value: 'middle', label: 'Middle', icon: AlignVerticalJustifyCenter },
+  { value: 'bottom', label: 'Bottom', icon: AlignVerticalJustifyEnd },
+];
 
 /**
  * Edit Bar Modal Component
@@ -20,7 +26,7 @@ export function EditBarModal({
   if (!bar) return null;
 
   // Check if bar is in the past
-  const barEndWeek = (bar.startWeek ?? 0) + (bar.duration ?? 1);
+  const barEndWeek = bar.startWeek + bar.duration;
   const isInPast = todayPosition && barEndWeek <= todayPosition.totalWeeks;
 
   return (
@@ -189,6 +195,37 @@ export function EditBarModal({
                 title={preset.name}
               />
             ))}
+          </div>
+        </div>
+
+        {/* Vertical Alignment */}
+        <div>
+          <label className="block text-sm font-medium mb-2" style={{ color: theme.textSecondary }}>
+            Vertical Position
+          </label>
+          <div className="flex gap-2">
+            {VERTICAL_ALIGN_OPTIONS.map((option) => {
+              const Icon = option.icon;
+              const isSelected = (bar.verticalAlign || 'middle') === option.value;
+              return (
+                <button
+                  key={option.value}
+                  onClick={() => {
+                    if (typeof onUpdate === 'function') onUpdate('verticalAlign', option.value);
+                  }}
+                  className="flex-1 px-3 py-2 rounded border transition-all flex items-center justify-center gap-2"
+                  style={{
+                    backgroundColor: isSelected ? theme.accent : theme.inputBg,
+                    color: isSelected ? '#fff' : theme.textPrimary,
+                    borderColor: isSelected ? theme.accent : theme.inputBorder,
+                  }}
+                  title={option.label}
+                >
+                  <Icon size={16} />
+                  <span className="text-xs">{option.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 

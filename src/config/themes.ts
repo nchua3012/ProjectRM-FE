@@ -7,30 +7,30 @@ export const THEMES: Readonly<Themes> = Object.freeze({
   light: Object.freeze({
     name: 'light' as const,
 
-    // Header & Navigation
-    headerBg: '#374151',
-    headerText: '#ffffff',
-    subHeaderBg: '#4b5563',
+    // Header & Navigation - Off-white with grey text (Frappe style)
+    headerBg: '#f8f8f8',
+    headerText: '#383838',
+    subHeaderBg: '#ededed',
 
-    // Sidebar
-    sidebarBg: '#1f2937',
-    sidebarText: '#f3f4f6',
-    sidebarBorder: '#374151',
+    // Sidebar - Light grey
+    sidebarBg: '#f8f8f8',
+    sidebarText: '#525252',
+    sidebarBorder: '#dedede',
 
-    // Grid
+    // Grid - Off-white
     gridBg: '#ffffff',
-    gridAltBg: '#f9fafb',
-    gridLine: '#e5e7eb',
-    cellHover: '#f3f4f6',
+    gridAltBg: '#fafafa',
+    gridLine: '#ededed',
+    cellHover: '#f5f5f5',
 
     // Today Marker
-    todayBg: '#10b981',
-    todayBgLight: 'rgba(16, 185, 129, 0.15)',
+    todayBg: '#525252',
+    todayBgLight: 'rgba(82, 82, 82, 0.1)',
 
     // Task Bars - Muted professional tones
-    taskDefault: '#d97706', // Amber/gold
-    taskActive: '#f59e0b', // Lighter amber
-    taskComplete: '#6b7280', // Grey for completed
+    taskDefault: '#525252', // Grey default
+    taskActive: '#383838', // Darker grey
+    taskComplete: '#b0b0b0', // Light grey for completed
 
     // Milestones
     milestoneDefault: '#d97706', // Amber diamond
@@ -38,25 +38,25 @@ export const THEMES: Readonly<Themes> = Object.freeze({
     milestoneDesign: '#2563eb', // Blue for design
 
     // Accents
-    accent: '#d97706', // Amber accent
-    accentHover: '#b45309',
+    accent: '#171717', // Dark accent
+    accentHover: '#383838',
     danger: '#dc2626',
     success: '#10b981',
 
-    // Text
-    textPrimary: '#111827',
-    textSecondary: '#6b7280',
-    textMuted: '#9ca3af',
+    // Text - Grey tones
+    textPrimary: '#383838',
+    textSecondary: '#525252',
+    textMuted: '#7c7c7c',
 
-    // Modal
+    // Modal - Off-white
     modalBg: '#ffffff',
-    inputBg: '#ffffff',
-    inputBorder: '#e5e7eb',
+    inputBg: '#fafafa',
+    inputBorder: '#dedede',
 
     // Holidays
-    holidayBg: 'rgba(156, 163, 175, 0.15)',
-    holidayBorder: '#9ca3af',
-    holidayText: '#6b7280',
+    holidayBg: 'rgba(156, 163, 175, 0.1)',
+    holidayBorder: '#c9c9c9',
+    holidayText: '#7c7c7c',
   }),
 
   dark: Object.freeze({

@@ -178,19 +178,19 @@ export function isWeekBeforeToday(weekIndex: number, todayPosition: TodayPositio
  * @returns True if grayscale should be applied
  */
 export function shouldApplyGrayscale(bar: TaskBar, todayPosition: TodayPosition | null): boolean {
-  if (!todayPosition) return false;
+  if (!todayPosition || !bar) return false;
 
-  const barEndWeek = (bar?.startWeek ?? 0) + (bar?.duration ?? 1);
+  const barEndWeek = bar.startWeek + bar.duration;
 
   // Future bars: never grayscale
-  if ((bar?.startWeek ?? 0) >= todayPosition.totalWeeks) return false;
+  if (bar.startWeek >= todayPosition.totalWeeks) return false;
 
   // Completed bars: always grayscale if in past
-  if (bar?.completed && barEndWeek <= todayPosition.totalWeeks) return true;
+  if (bar.completed && barEndWeek <= todayPosition.totalWeeks) return true;
 
   // Incomplete past bars: only if not overridden
   if (barEndWeek <= todayPosition.totalWeeks) {
-    return !bar?.ignoreGrayscale;
+    return !bar.ignoreGrayscale;
   }
 
   return false;
@@ -205,8 +205,8 @@ export function shouldApplyGrayscale(bar: TaskBar, todayPosition: TodayPosition 
 export function doesBarSpanToday(bar: TaskBar, todayPosition: TodayPosition | null): boolean {
   if (!todayPosition || !bar) return false;
 
-  const barStart = bar.startWeek ?? 0;
-  const barEnd = barStart + (bar.duration ?? 1);
+  const barStart = bar.startWeek;
+  const barEnd = barStart + bar.duration;
 
   return barStart < todayPosition.totalWeeks && barEnd > todayPosition.totalWeeks;
 }

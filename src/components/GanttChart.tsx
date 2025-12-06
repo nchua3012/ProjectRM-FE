@@ -95,7 +95,7 @@ export function GanttChart() {
   const swimlaneOps = {
     add: useCallback(() => {
       const newId = generateId(swimlanes);
-      const newOrder = Math.max(0, ...swimlanes.map((s) => s.order ?? 0)) + 1;
+      const newOrder = generateId(swimlanes.map((s) => ({ id: s.order ?? 0 })));
       setSwimlanes((prev) => [
         ...prev,
         DataFactory.createSwimlane(newId, `Workstream ${newId}`, newOrder),
@@ -140,7 +140,7 @@ export function GanttChart() {
       setSwimlanes((prev) =>
         prev.map((s) => {
           if (s.id !== swimlaneId) return s;
-          const newId = Math.max(0, ...(s.bars || []).map((b) => b.id), 0) + 1;
+          const newId = generateId(s.bars || []);
           return {
             ...s,
             bars: [...(s.bars || []), DataFactory.createBar(newId, weekIndex, s.color)],
@@ -199,7 +199,7 @@ export function GanttChart() {
       setSwimlanes((prev) =>
         prev.map((s) => {
           if (s.id !== swimlaneId) return s;
-          const newId = Math.max(0, ...(s.milestones || []).map((m) => m.id), 0) + 1;
+          const newId = generateId(s.milestones || []);
           return {
             ...s,
             milestones: [
@@ -258,7 +258,7 @@ export function GanttChart() {
           setSwimlanes((prev) =>
             prev.map((s) => {
               if (s.id !== swimlaneId) return s;
-              const newId = Math.max(0, ...(s.milestones || []).map((m) => m.id), 0) + 1;
+              const newId = generateId(s.milestones || []);
               return {
                 ...s,
                 milestones: [
@@ -312,13 +312,13 @@ export function GanttChart() {
         setSwimlanes((prev) =>
           prev.map((s) => {
             if (s.id !== editingMilestone.swimlaneId) return s;
-            const existingMaxId = Math.max(0, ...(s.milestones || []).map((m) => m.id), 0);
+            const baseId = generateId(s.milestones || []);
             const newMilestones: Milestone[] = [];
-            for (let i = 1; i <= count; i++) {
-              const newWeek = milestone.week + i * interval;
+            for (let i = 0; i < count; i++) {
+              const newWeek = milestone.week + (i + 1) * interval;
               if (newWeek <= totalWeeks) {
                 newMilestones.push({
-                  id: existingMaxId + i,
+                  id: baseId + i,
                   week: newWeek,
                   name: milestone.name,
                   notes: milestone.notes || '',

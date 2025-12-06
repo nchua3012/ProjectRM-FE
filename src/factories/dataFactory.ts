@@ -32,6 +32,7 @@ export const DataFactory = {
       color: color || TASK_COLOR_PRESETS[0].color,
       completed: false,           // Track if task is finished
       ignoreGrayscale: false,     // Override for incomplete past tasks
+      verticalAlign: 'middle',    // Default to middle alignment
     };
   },
 
